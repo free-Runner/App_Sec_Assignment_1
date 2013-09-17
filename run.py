@@ -10,10 +10,8 @@
 """
 
 '''
-What to do?
-
 -Calculation
-	{add,sub,mul,div,mod,not,nand}
+	{add,sub,mul,div,nand}
 -Control
 	{jeq,jne,jl,jg,jmp}
 -Memory
@@ -121,8 +119,11 @@ def process(data):
 	while True:
 		#print 'PC-',PC+1
 		#first check data[PC] length
-		if len(data[PC]) > MAX_LINE_SIZE:
-			sys.exit('Line '+str(PC+1)+' too long')
+		try:
+			if len(data[PC]) > MAX_LINE_SIZE:
+				sys.exit('Line '+str(PC+1)+' too long')
+		except:
+			sys.exit('Line '+str(PC+1)+' invalid')
 
 		#check if EOF
 		if data[PC].strip() == 'end':
@@ -169,23 +170,6 @@ def process(data):
 					sys.exit('Line '+str(PC+1)+' has invalid jump offset')
 			else:
 				sys.exit('Line '+str(PC)+' has unknown register')
-
-		elif elements[0] == 'jne':
-			#Check that both inputs are registers
-			if elements[1] in REGS and elements[2] in REGS:
-				if REGS[elements[1]] != REGS[elements[2]]:
-					try:
-						offset = int(elements[3])
-					except ValueError:
-						sys.exit('Line '+str(PC+1)+' has invalid jump offset')
-					#Check constraints
-					if offset != 0 and PC+offset < len(data) and PC+offset > 0:
-						PC += offset
-						continue
-					else:
-						sys.exit('Line '+str(PC+1)+' has invalid jump offset')
-			else:
-				sys.exit('Line '+str(PC+1)+' has unknown register')
 
 		elif elements[0] == 'jmp':
 			try:
@@ -237,7 +221,7 @@ def main(argc,argv):
 
 	#exit if reg_num is too big or negative
 	if reg_num > REG_MAX or reg_num <= 0:
-		sys.exit('Too many/few registers, REG_MAX = 20')
+		sys.exit('Too many/few registers, REG_MAX = 25')
 
 	#Open file, making sure it exists
 	try:	
