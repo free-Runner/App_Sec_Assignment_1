@@ -6,29 +6,29 @@
 	Turing Complete Sandbox
 ---------------------------------
 
-	Description: Runs instructions as needed
+	Description: Runs instructions as needed without crashing
 """
 
 '''
 What to do?
 
 -Calculation
-	{add,sub,mul,div,mod,not,and,or}
+	{add,sub,mul,div,mod,not,nand}
 -Control
-	{jeq,jne,jmp}
+	{jeq,jne,jl,jg,jmp}
 -Memory
-	{load}
-
+	{load} --basically assignment/copy operator
 '''
 
 import sys
 
-REG_MAX = 20 		#Max number of registers allowed
-MAX_CODE_SIZE = 50
-MAX_LINE_SIZE = 30	#Limit on each line of code
+REG_MAX = 25 		#Max number of registers allowed
+MAX_CODE_SIZE = 50	#Limit on code lines
+MAX_LINE_SIZE = 30	#Limit on size of each line of code
 #List of commands - name & number of parameters
 COMMANDS = {'add': 3, 'sub': 3, 'mul' :3, 'div':3, 
-			'jeq': 3, 'jne': 3, 'jmp': 1, 'load': 2, 'print': 1, 'nand': 3}
+			'jeq': 3, 'jne': 3, 'jl': 3, 'jg': 3,
+			'jmp': 1, 'load': 2, 'print': 1, 'nand': 3}
 #Dict to hold registers - name & value
 REGS = {}
 
@@ -39,8 +39,37 @@ def create_vars(reg_num):
 		REGS[chr(count)] = 0	#initialize registers to 0
 		count+=1
 
+def compare(a,b,command):
+	'''Returns comparison based on command'''
+	return {
+	'jeq': a == b,
+	'jne': a != b,
+	'jl': a < b,
+	'jg': a > b
+	}.get(command, None)
+
+def branch(reg_1,reg_2,offset,command,PC):
+	'''Returns the result of the comparison command on inputs 1 & 2'''
+	#Determines if jumping or not
+	branch = False
+	#Check that both inputs are registers
+	if reg_1 in REGS and reg_2 in REGS:
+		if compare(REGS[elements[1]],REGS[elements[2]]):
+			try:
+				offset = int(elements[3])
+			except ValueError:
+				sys.exit('Line '+str(PC+1)+' has invalid jump offset')
+			#Check constraints
+			if offset != 0 and PC+offset < len(data) and PC+offset > 0:
+				PC += offset
+				return True
+			#Else invalid offset
+			sys.exit('Line '+str(PC+1)+' has invalid jump offset')
+	else:
+		sys.exit('Line '+str(PC)+' has unknown register')
+
 def calculate(input_1,input_2,command,PC):
-	'''Returns the result of the command on inputs 1 & 2'''
+	'''Returns the result of the calculation command on inputs 1 & 2'''
 	#Evaluate input_1
 	if input_1 in REGS:	# operand 1 is a register
 		op_1 = REGS[input_1]
@@ -104,6 +133,12 @@ def process(data):
 
 		#print elements
 
+		#exit if line empty or just one command
+		#Smallest command has 2 elements
+		if len(elements) < 2:
+			sys.exit('Line '+str(PC+1)+' malformed')
+
+
 		#exit if invalid command
 		if elements[0] not in COMMANDS:
 			sys.exit('Line '+str(PC+1)+' has invalid command')
@@ -119,7 +154,7 @@ def process(data):
 			else:
 				sys.exit('Line '+str(PC+1)+' has unknown register')
 
-		elif elements[0] == 'jeq':
+		elif elements[0] in ['jeq','jne','jg','jl']:
 			#Check that both inputs are registers
 			if elements[1] in REGS and elements[2] in REGS:
 				if REGS[elements[1]] == REGS[elements[2]]:
