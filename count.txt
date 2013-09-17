@@ -1,0 +1,9 @@
+begin
+load a 0
+load b 10
+jeq b a 4
+print b
+sub b b 1
+jmp -3
+sub b b 0
+end
