@@ -1,7 +1,7 @@
 App_Sec_Assignment_1
 ====================
 
-Python Sandbox	- Aman Ali
+Python Sandbox
 
 This sandbox runs using a simplied instruction set.
 
